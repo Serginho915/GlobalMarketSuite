@@ -737,7 +737,11 @@ button {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin: 24px 0;
+  margin: 0 0 24px;
+}
+
+.share-shell {
+  padding: 0;
 }
 
 .share-label {

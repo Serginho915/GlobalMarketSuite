@@ -315,7 +315,9 @@ function ArticlePage({ article }: { article?: Article }) {
         </div>
       </section>
       <img className="detail-cover" src={article.coverImage || coverFallback} alt="" />
-      <ShareBar title={article.title} url={`/articles/${article.slug}`} />
+      <div className="shell prose share-shell">
+        <ShareBar title={article.title} url={`/articles/${article.slug}`} />
+      </div>
       <article className="shell prose" dangerouslySetInnerHTML={{ __html: article.contentHtml }} />
     </main>
   );
