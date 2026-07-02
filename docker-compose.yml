@@ -1,0 +1,100 @@
+services:
+  env-setup:
+    image: node:20-alpine
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    command: ["node", "scripts/setup-dev-env.mjs"]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: globalmarketsuite
+      POSTGRES_USER: globalmarketsuite
+      POSTGRES_PASSWORD: globalmarketsuite
+    volumes:
+      - globalmarketsuite_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U globalmarketsuite -d globalmarketsuite"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    image: globalmarketsuite-backend-dev
+    build:
+      context: ./backend
+      target: dev
+    ports:
+      - "4000:4000"
+    env_file:
+      - path: .env
+        required: false
+      - path: backend/.env
+        required: false
+    environment:
+      DATABASE_URL: postgres://globalmarketsuite:globalmarketsuite@postgres:5432/globalmarketsuite
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      env-setup:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  frontend:
+    image: globalmarketsuite-frontend-dev
+    build:
+      context: ./frontend
+      target: dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: frontend/.env
+        required: false
+    environment:
+      VITE_API_URL: http://localhost:4000
+    depends_on:
+      env-setup:
+        condition: service_completed_successfully
+      backend:
+        condition: service_healthy
+
+  admin-seed:
+    image: globalmarketsuite-backend-dev
+    env_file:
+      - path: .env
+        required: false
+      - path: backend/.env
+        required: false
+    environment:
+      DATABASE_URL: postgres://globalmarketsuite:globalmarketsuite@postgres:5432/globalmarketsuite
+      LOCAL_SUPERADMIN_EMAIL: ${LOCAL_SUPERADMIN_EMAIL:-admin@globalmarketsuite.local}
+      LOCAL_SUPERADMIN_PASSWORD: ${LOCAL_SUPERADMIN_PASSWORD:-MySecretPassword123!}
+    command: npm run create-superadmin
+    depends_on:
+      env-setup:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  globalmarketsuite_postgres_data:

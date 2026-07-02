@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-label="Culture and brand signal">
+  <rect width="1200" height="760" fill="#f7f4ee"/>
+  <rect x="0" y="0" width="390" height="760" fill="#0e3b43"/>
+  <path d="M240 135 C400 95 510 165 610 285 C710 405 850 425 1030 350" fill="none" stroke="#c14953" stroke-width="26" stroke-linecap="round"/>
+  <path d="M255 585 C420 505 490 405 690 470 C830 515 930 620 1110 555" fill="none" stroke="#f6c85f" stroke-width="26" stroke-linecap="round"/>
+  <g fill="#f7f4ee">
+    <circle cx="160" cy="190" r="52"/>
+    <circle cx="160" cy="380" r="52"/>
+    <circle cx="160" cy="570" r="52"/>
+  </g>
+  <g fill="#0e3b43">
+    <circle cx="610" cy="285" r="22"/>
+    <circle cx="690" cy="470" r="22"/>
+    <circle cx="1030" cy="350" r="22"/>
+  </g>
+  <text x="465" y="170" fill="#0e3b43" font-family="Georgia, serif" font-size="72" font-weight="700">Culture Signal</text>
+  <text x="470" y="230" fill="#425c5a" font-family="Arial, sans-serif" font-size="28">Brands as social interpretation</text>
+</svg>

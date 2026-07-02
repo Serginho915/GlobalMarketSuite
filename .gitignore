@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+frontend/.next/
+frontend/out/
+
+# Build
+backend/dist/
+frontend/dist/
+dist/
+
+# Env files
+.env
+.env.production
+backend/.env
+backend/.env.production
+frontend/.env
+frontend/.env.production
+
+# Runtime data
+backend/data/
+backend/media/
+postgres_data/
+redis_data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Docker volumes (local)

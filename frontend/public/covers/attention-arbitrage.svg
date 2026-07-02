@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-label="Attention economy signal field">
+  <rect width="1200" height="760" fill="#101820"/>
+  <circle cx="900" cy="180" r="190" fill="#f6c85f"/>
+  <circle cx="900" cy="180" r="116" fill="#101820"/>
+  <circle cx="900" cy="180" r="52" fill="#c14953"/>
+  <path d="M90 560 C250 120 430 700 610 250 C765 -130 910 640 1110 285" fill="none" stroke="#f4efe7" stroke-width="10"/>
+  <path d="M90 635 C250 195 430 775 610 325 C765 -55 910 715 1110 360" fill="none" stroke="#3aa6b9" stroke-width="10"/>
+  <g fill="#f4efe7">
+    <circle cx="210" cy="360" r="14"/>
+    <circle cx="430" cy="516" r="14"/>
+    <circle cx="610" cy="250" r="14"/>
+    <circle cx="820" cy="382" r="14"/>
+  </g>
+  <text x="90" y="160" fill="#f4efe7" font-family="Georgia, serif" font-size="74" font-weight="700">Attention</text>
+  <text x="94" y="220" fill="#9fd8df" font-family="Arial, sans-serif" font-size="28">Where desire learns its route</text>
+</svg>
