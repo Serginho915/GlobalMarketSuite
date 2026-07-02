@@ -57,6 +57,27 @@ function navigate(path: string) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function ShareBar({ title }: { title: string }) {
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+  const targets = [
+    { label: "X", href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
+    { label: "Threads", href: `https://www.threads.net/intent/post?text=${encodedTitle}%20${encodedUrl}` },
+    { label: "Telegram", href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}` },
+    { label: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+  ];
+
+  return (
+    <aside className="share-bar" aria-label="Share this post">
+      <span>Share</span>
+      {targets.map((target) => (
+        <a key={target.label} href={target.href} target="_blank" rel="noreferrer">{target.label}</a>
+      ))}
+    </aside>
+  );
+}
+
 function readingTime(html: string) {
   return Math.max(4, Math.ceil(html.replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).length / 210));
 }
@@ -257,6 +278,7 @@ function ArticlePage({ article }: { article?: Article }) {
         </div>
       </section>
       <img className="detail-cover" src={article.coverImage || coverFallback} alt="" />
+      <ShareBar title={article.title} />
       <article className="shell prose" dangerouslySetInnerHTML={{ __html: article.contentHtml }} />
     </main>
   );
