@@ -84,7 +84,8 @@ ensureEnv({
   file: "frontend/.env",
   example: "frontend/.env.example",
   defaults: {
-    VITE_API_URL: "http://localhost:4000"
+    VITE_API_URL: "http://localhost:4000",
+    VITE_GA_MEASUREMENT_ID: "G-DJXSW2JR0R"
   }
 });
 

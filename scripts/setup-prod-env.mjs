@@ -10,6 +10,7 @@ if (fs.existsSync(file)) {
 POSTGRES_USER=globalmarketsuite
 POSTGRES_PASSWORD=${secret()}
 VITE_API_URL=https://api.globalmarketsuite.com
+VITE_GA_MEASUREMENT_ID=G-DJXSW2JR0R
 `;
 
   fs.writeFileSync(file, content, { mode: 0o600 });

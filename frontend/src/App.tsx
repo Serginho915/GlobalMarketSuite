@@ -12,6 +12,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { getPost, getPosts, request, subscribe } from './api';
+import { trackPageView } from './analytics';
 import type { AdminSettings, Article, Post } from './domain';
 
 const coverFallback = '/covers/market-map.svg';
@@ -641,6 +642,10 @@ export default function App() {
       return;
     }
     getPost(match[1]).then(setSelected).catch(() => setSelected(null));
+  }, [path]);
+
+  useEffect(() => {
+    trackPageView(path);
   }, [path]);
 
   const articles = useMemo(() => posts.map(toArticle), [posts]);
