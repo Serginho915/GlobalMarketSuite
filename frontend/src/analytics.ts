@@ -15,7 +15,12 @@ declare global {
 }
 
 export function initAnalytics() {
-  if (!measurementId || typeof window === 'undefined' || window.gtag) return;
+  if (!measurementId || typeof window === 'undefined') return;
+  if (window.gtag) {
+    scriptLoaded = true;
+    lastTrackedPath = window.location.pathname;
+    return;
+  }
 
   pendingPageView = window.location.pathname;
   window.dataLayer = window.dataLayer || [];
