@@ -1,6 +1,7 @@
 const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim();
 let scriptLoaded = false;
 let pendingPageView: string | null = null;
+let lastTrackedPath = '';
 
 type GtagCommand = 'js' | 'config' | 'event';
 type GtagParams = Record<string, unknown>;
@@ -16,6 +17,7 @@ declare global {
 export function initAnalytics() {
   if (!measurementId || typeof window === 'undefined' || window.gtag) return;
 
+  pendingPageView = window.location.pathname;
   window.dataLayer = window.dataLayer || [];
   window.gtag = function gtag(...args: GtagArguments) {
     window.dataLayer?.push(args);
@@ -34,17 +36,17 @@ export function initAnalytics() {
   document.head.appendChild(script);
 
   window.gtag('js', new Date());
-  window.gtag('config', measurementId, { send_page_view: false });
 }
 
 function sendPageView(path: string) {
   if (!measurementId || typeof window === 'undefined' || !window.gtag) return;
+  if (path === lastTrackedPath) return;
 
-  window.gtag('event', 'page_view', {
+  lastTrackedPath = path;
+  window.gtag('config', measurementId, {
     page_path: path,
     page_location: window.location.href,
     page_title: document.title,
-    send_to: measurementId,
   });
 }
 
