@@ -21,6 +21,7 @@ const secret = () => crypto.randomBytes(32).toString('base64url');
 const backendFile = 'backend/.env.production';
 if (!fs.existsSync(backendFile)) {
   const backendContent = `NODE_ENV=production
+TZ=Europe/Sofia
 PORT=4000
 REDIS_URL=redis://redis:6379
 CORS_ORIGIN=https://globalmarketsuite.com
