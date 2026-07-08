@@ -5,12 +5,14 @@ import {
   FilePlus,
   ImagePlus,
   LogOut,
+  Menu,
   RefreshCw,
   Save,
   Search,
   Settings,
   Sparkles,
   Trash2,
+  X,
 } from 'lucide-react';
 import { assetUrl, getPost, getPosts, request, subscribe } from './api';
 import { trackPageView } from './analytics';
@@ -161,16 +163,33 @@ function readFileAsDataUrl(file: File) {
 }
 
 function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  function go(path: string) {
+    setMenuOpen(false);
+    navigate(path);
+  }
+
   return (
-    <header className="site-header">
+    <header className={`site-header ${menuOpen ? 'menu-open' : ''}`}>
       <div className="shell header-inner">
-        <button className="brand" onClick={() => navigate('/')}>
+        <button className="brand" onClick={() => go('/')}>
           <span className="brand-mark">GMS</span>
           <span>GlobalMarketSuite</span>
         </button>
-        <nav className="nav">
-          <button onClick={() => navigate('/articles')}>Intelligence</button>
-          <button onClick={() => navigate('/about')}>About</button>
+        <button
+          className="menu-toggle"
+          type="button"
+          aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
+          aria-expanded={menuOpen}
+          aria-controls="site-navigation"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+        <nav id="site-navigation" className="nav">
+          <button onClick={() => go('/articles')}>Intelligence</button>
+          <button onClick={() => go('/about')}>About</button>
         </nav>
       </div>
     </header>

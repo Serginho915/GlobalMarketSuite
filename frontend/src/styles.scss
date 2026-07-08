@@ -55,7 +55,8 @@ button {
 }
 
 .brand,
-.nav button {
+.nav button,
+.menu-toggle {
   border: 0;
   background: transparent;
   color: #172321;
@@ -77,6 +78,15 @@ button {
   background: #0e3b43;
   color: #f7f4ee;
   font-size: 13px;
+}
+
+.menu-toggle {
+  width: 44px;
+  height: 44px;
+  display: none;
+  place-items: center;
+  border: 1px solid rgba(14, 59, 67, 0.2);
+  border-radius: 6px;
 }
 
 .nav {
@@ -749,6 +759,51 @@ button {
 }
 
 @media (max-width: 900px) {
+  .site-header {
+    position: sticky;
+  }
+
+  .header-inner {
+    position: relative;
+  }
+
+  .menu-toggle {
+    display: grid;
+    margin-left: auto;
+  }
+
+  .nav {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: min(320px, calc(100vw - 32px));
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid rgba(14, 59, 67, 0.18);
+    border-radius: 8px;
+    background: rgba(255, 250, 241, 0.98);
+    box-shadow: 0 18px 44px rgba(14, 59, 67, 0.16);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .site-header.menu-open .nav {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .nav button {
+    width: 100%;
+    min-height: 46px;
+    justify-content: flex-start;
+    padding: 0 12px;
+    text-align: left;
+  }
+
   .hero-grid,
   .section-head,
   .featured-card,
@@ -779,22 +834,6 @@ button {
   .shell,
   .admin-shell {
     width: min(100% - 22px, 1160px);
-  }
-
-  .header-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 12px 0;
-  }
-
-  .nav {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .nav button {
-    padding: 0 8px;
-    font-size: 14px;
   }
 
   .hero h1 {
