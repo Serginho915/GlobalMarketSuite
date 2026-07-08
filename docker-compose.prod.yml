@@ -31,6 +31,8 @@ services:
     restart: unless-stopped
     ports:
       - "4100:4000"
+    volumes:
+      - globalmarketsuite_prod_uploads:/app/uploads
     env_file:
       - path: backend/.env.production
         required: false
@@ -64,3 +66,4 @@ services:
 
 volumes:
   globalmarketsuite_prod_postgres_data:
+  globalmarketsuite_prod_uploads:

@@ -1,5 +1,6 @@
 import { auditLog } from './auditLog';
 import { getAdminSettings } from './adminSettings';
+import { pickRandomCoverImage } from './mediaStore';
 import { generateArticlesWithOpenRouter } from './openrouter';
 import { makeSlug, upsertPost } from './postStore';
 
@@ -11,8 +12,9 @@ export async function generateAndStoreArticles(actor?: { id?: string; email?: st
   const inputs = await generateArticlesWithOpenRouter(count);
   const now = Date.now();
   return Promise.all(
-    inputs.map((input, index) => {
+    inputs.map(async (input, index) => {
       input.slug = `${makeSlug(input.slug || input.title)}-${now}-${index + 1}`;
+      input.coverImage = await pickRandomCoverImage() || input.coverImage;
       return upsertPost(input, 'ai');
     }),
   );

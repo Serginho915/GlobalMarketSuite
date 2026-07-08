@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 import { ensureSchema } from './services/db';
 import { migrateLegacyDataIfNeeded } from './services/legacyDataMigration';
 import { errorHandler } from './middleware/errorHandler';
@@ -17,15 +18,16 @@ const app = express();
 const port = Number(process.env.PORT || 4000);
 const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(
   cors({
     origin: corsOrigin,
     credentials: true,
   }),
 );
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
+app.use('/uploads', express.static(process.env.UPLOAD_DIR || path.resolve(process.cwd(), 'uploads')));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', service: 'globalmarketsuite-backend', time: new Date().toISOString() });

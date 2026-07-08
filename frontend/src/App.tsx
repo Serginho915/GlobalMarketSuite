@@ -3,6 +3,7 @@ import {
   BarChart3,
   Clock,
   FilePlus,
+  ImagePlus,
   LogOut,
   RefreshCw,
   Save,
@@ -11,7 +12,7 @@ import {
   Sparkles,
   Trash2,
 } from 'lucide-react';
-import { getPost, getPosts, request, subscribe } from './api';
+import { assetUrl, getPost, getPosts, request, subscribe } from './api';
 import { trackPageView } from './analytics';
 import type { AdminSettings, Article, Post } from './domain';
 
@@ -34,6 +35,13 @@ type DraftPost = {
   coverImage: string;
   status: 'draft' | 'published';
   tags: string;
+};
+
+type MediaAsset = {
+  name: string;
+  url: string;
+  size: number;
+  createdAt: string;
 };
 
 type Session = {
@@ -123,7 +131,7 @@ function readingTime(html: string) {
 function toArticle(post: Post, index = 0): Article {
   return {
     ...post,
-    coverImage: post.coverImage || coverFallback,
+    coverImage: post.coverImage?.startsWith('/uploads/') ? assetUrl(post.coverImage) : post.coverImage || coverFallback,
     category: post.tags[0] || (post.source === 'ai' ? 'Market Intelligence' : 'Strategy'),
     readingTime: readingTime(post.contentHtml),
     views: 3200 + index * 370,
@@ -141,6 +149,15 @@ function defaultTimeForIndex(index: number) {
 
 function normalizeGenerationTimes(times: string[], count: number) {
   return Array.from({ length: count }, (_, index) => times[index] || defaultTimeForIndex(index));
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('Could not read image.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 function Header() {
@@ -388,6 +405,7 @@ function LoginPanel({ onLogin }: { onLogin: (session: Session) => void }) {
 
 function AdminPanel({ session, onLogout }: { session: Session; onLogout: () => void }) {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [coverImages, setCoverImages] = useState<MediaAsset[]>([]);
   const [settings, setSettings] = useState<AdminSettings | null>(null);
   const [draft, setDraft] = useState<DraftPost>(emptyDraft);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
@@ -395,12 +413,14 @@ function AdminPanel({ session, onLogout }: { session: Session; onLogout: () => v
   const [busy, setBusy] = useState(false);
 
   async function loadAdminData() {
-    const [adminPosts, adminSettings] = await Promise.all([
+    const [adminPosts, adminSettings, mediaAssets] = await Promise.all([
       request<Post[]>('/api/admin/posts', {}, session.token, session.csrfToken),
       request<AdminSettings>('/api/admin/settings', {}, session.token, session.csrfToken),
+      request<MediaAsset[]>('/api/admin/media/covers', {}, session.token, session.csrfToken),
     ]);
     setPosts(adminPosts);
     setSettings(adminSettings);
+    setCoverImages(mediaAssets);
   }
 
   useEffect(() => {
@@ -481,6 +501,45 @@ function AdminPanel({ session, onLogout }: { session: Session; onLogout: () => v
     }
   }
 
+  async function uploadCoverImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setBusy(true);
+    setMessage('');
+    try {
+      const asset = await request<MediaAsset>('/api/admin/media/covers', {
+        method: 'POST',
+        body: JSON.stringify({ fileName: file.name, dataUrl: await readFileAsDataUrl(file) }),
+      }, session.token, session.csrfToken);
+      setCoverImages((current) => [asset, ...current]);
+      setDraft((current) => ({ ...current, coverImage: asset.url }));
+      setMessage('Cover image uploaded.');
+    } catch (error) {
+      handleAdminError(error, 'Could not upload cover image');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteCoverImage(asset: MediaAsset) {
+    setBusy(true);
+    setMessage('');
+    try {
+      await request(`/api/admin/media/covers/${encodeURIComponent(asset.name)}`, {
+        method: 'DELETE',
+      }, session.token, session.csrfToken);
+      setCoverImages((current) => current.filter((item) => item.name !== asset.name));
+      if (draft.coverImage === asset.url) setDraft((current) => ({ ...current, coverImage: coverFallback }));
+      setMessage('Cover image deleted.');
+    } catch (error) {
+      handleAdminError(error, 'Could not delete cover image');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function updateGenerationCount(value: number) {
     if (!settings) return;
     const generationCount = clampGenerationCount(value);
@@ -543,7 +602,15 @@ function AdminPanel({ session, onLogout }: { session: Session; onLogout: () => v
             <label><span>Title</span><input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} required /></label>
             <label><span>Slug</span><input value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: event.target.value })} /></label>
             <label><span>Excerpt</span><textarea value={draft.excerpt} onChange={(event) => setDraft({ ...draft, excerpt: event.target.value })} required /></label>
-            <label><span>Cover image</span><input value={draft.coverImage} onChange={(event) => setDraft({ ...draft, coverImage: event.target.value })} /></label>
+            <label>
+              <span>Cover image</span>
+              <select value={draft.coverImage} onChange={(event) => setDraft({ ...draft, coverImage: event.target.value })}>
+                <option value={coverFallback}>Default market map</option>
+                <option value="/covers/attention-arbitrage.svg">Attention arbitrage</option>
+                <option value="/covers/behavioral-ledger.svg">Behavioral ledger</option>
+                {coverImages.map((asset) => <option key={asset.name} value={asset.url}>{asset.name}</option>)}
+              </select>
+            </label>
             <label><span>Tags</span><input value={draft.tags} onChange={(event) => setDraft({ ...draft, tags: event.target.value })} placeholder="Brand Strategy, AI, Behavioral Economics" /></label>
             <label><span>Status</span><select value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value as DraftPost['status'] })}><option value="published">Published</option><option value="draft">Draft</option></select></label>
             <label><span>HTML content</span><textarea className="html-editor" value={draft.contentHtml} onChange={(event) => setDraft({ ...draft, contentHtml: event.target.value })} required /></label>
@@ -590,6 +657,33 @@ function AdminPanel({ session, onLogout }: { session: Session; onLogout: () => v
           )}
         </section>
       </div>
+
+      <section className="admin-panel media-panel">
+        <div className="media-panel-head">
+          <div>
+            <h2><ImagePlus size={20} /> Cover images</h2>
+            <p>Uploaded images are used as random covers for newly generated AI articles.</p>
+          </div>
+          <label className="btn primary upload-btn">
+            Upload image
+            <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={uploadCoverImage} disabled={busy} />
+          </label>
+        </div>
+        <div className="media-grid">
+          {coverImages.map((asset) => (
+            <article key={asset.name} className="media-card">
+              <img src={assetUrl(asset.url)} alt="" />
+              <div>
+                <strong>{asset.name}</strong>
+                <small>{Math.round(asset.size / 1024)} KB</small>
+              </div>
+              <button type="button" className="btn ghost" onClick={() => setDraft({ ...draft, coverImage: asset.url })}>Use in editor</button>
+              <button type="button" className="icon-btn danger" onClick={() => deleteCoverImage(asset)} title="Delete"><Trash2 size={17} /></button>
+            </article>
+          ))}
+          {!coverImages.length && <p className="empty-note">No uploaded cover images yet.</p>}
+        </div>
+      </section>
 
       <section className="admin-panel post-list-panel">
         <h2><BarChart3 size={20} /> Articles</h2>

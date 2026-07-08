@@ -44,6 +44,8 @@ services:
       DATABASE_URL: postgres://globalmarketsuite:globalmarketsuite@postgres:5432/globalmarketsuite
       REDIS_URL: redis://redis:6379
       CORS_ORIGIN: http://localhost:3000
+    volumes:
+      - globalmarketsuite_uploads:/app/uploads
     depends_on:
       env-setup:
         condition: service_completed_successfully
@@ -98,3 +100,4 @@ services:
 
 volumes:
   globalmarketsuite_postgres_data:
+  globalmarketsuite_uploads:
